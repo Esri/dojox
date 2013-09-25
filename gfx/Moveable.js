@@ -1,6 +1,6 @@
 define(["dojo/_base/lang","dojo/_base/declare","dojo/_base/array","dojo/_base/event","dojo/topic","dojo/touch",
-	"dojo/dom-class","dojo/_base/window","./Mover"],
-  function(lang,declare,arr,event,topic,touch,domClass,win,Mover){
+  "dojo/dom-class","dojo/_base/window","./Mover","dojo/mouse"],
+  function(lang,declare,arr,event,topic,touch,domClass,win,Mover,Mouse){
 
 	/*=====
 	var __MoveableCtorArgs = declare("dojox.gfx.__MoveableCtorArgs", null, {
@@ -29,6 +29,7 @@ define(["dojo/_base/lang","dojo/_base/declare","dojo/_base/array","dojo/_base/ev
 			this.shape = shape;
 			this.delay = (params && params.delay > 0) ? params.delay : 0;
 			this.mover = (params && params.mover) ? params.mover : Mover;
+      this.leftButtonOnly = params && params.leftButtonOnly;
 			this.events = [
 				this.shape.on(touch.press, lang.hitch(this, "onMouseDown"))
 				// cancel text selection and text dragging
@@ -60,7 +61,9 @@ define(["dojo/_base/lang","dojo/_base/declare","dojo/_base/array","dojo/_base/ev
 				this._lastX = e.clientX;
 				this._lastY = e.clientY;
 			}else{
-				new this.mover(this.shape, e, this);
+        if (!this.leftButtonOnly || Mouse.isLeft(e)) {
+          new this.mover(this.shape, e, this);
+        }
 			}
 			event.stop(e);
 		},
