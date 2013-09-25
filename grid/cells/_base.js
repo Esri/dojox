@@ -105,7 +105,14 @@ define([
 			var i = this.grid.edit.info;
 			var d = this.get ? this.get(inRowIndex, inItem) : (this.value || this.defaultValue);
 			if (d && d.replace && this.grid.escapeHTMLInData) {
-				d = d.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+				// The first regex below is modified to avoid "double-escaping" 
+				// i.e., replacing an ampersand that is part of &lt; or any 
+				// such HTML entities
+				// Ref: https://support.sitepen.com/issues/20980
+				// The max number 8 is based on the assumption that entities are
+				// typically no longer than 8 characters not including the ampersand
+				// prefix
+				d = d.replace(/&(?![a-z0-9]{1,8}\;)/ig, '&amp;').replace(/</g, '&lt;');
 			}
 			if (this.editable && (this.alwaysEditing || (i.rowIndex==inRowIndex && i.cell==this))){
 				return this.formatEditing(i.value ? i.value : d, inRowIndex);
