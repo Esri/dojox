@@ -99,7 +99,7 @@ var FlickrRestStore = declare("dojox.data.FlickrRestStore",
 			format: "json",
 			method: "flickr.photos.search",
 			api_key: this._apikey,
-			extras: "owner_name,date_upload,date_taken"
+			extras: "owner_name,date_upload,date_taken,geo"
 		};
 		var isRest = false;
 		if(query.userid){
@@ -202,6 +202,11 @@ var FlickrRestStore = declare("dojox.data.FlickrRestStore",
 			content.text=query.text;
 			primaryKey.push("text:"+query.text);
 		}
+    
+    if(query.bbox) {
+      content.bbox=query.bbox;
+      primaryKey.push("bbox:"+query.bbox);
+    }
 
 		//The store only supports a single sort attribute, even though the
 		//Read API technically allows multiple sort attributes
