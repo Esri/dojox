@@ -27,9 +27,19 @@ define(["dojo/_base/declare", "dojo/dom", "dijit/registry", "dojo/_base/connect"
 						return;
 					}
 				}
-				this.textDir = chart.chart.textDir;
-				hub.connect(chart.chart, "setTextDir", this, "_setTextDirAttr");
-
+				
+				//BUG
+				//this.textDir = chart.chart.textDir;
+				//console.log(chart.chart); //returns undefined
+				
+				//WORKS
+				this.textDir = chart.textDir;
+				//console.log(chart); //returns chart object
+				
+				//I AM EXPLICITLY SETTING THE TEXTDIR PROP SO THIS CODE DOESN'T CAUSE AN ISSUE ALTHOUGH
+				//I HAVE MODIFIED IT ALSO TO BE SAFE
+				//hub.connect(chart.chart, "setTextDir", this, "_setTextDirAttr");
+				hub.connect(chart, "setTextDir", this, "_setTextDirAttr");
 			}else{
 				this.textDir = this.chart.textDir;
 				hub.connect(this.chart, "setTextDir", this, "_setTextDirAttr");
