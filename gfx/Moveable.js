@@ -115,7 +115,7 @@ define(["dojo/_base/lang","dojo/_base/declare","dojo/_base/array","dojo/_base/ev
 
 			// default implementation does nothing
 		},
-		onMove: function(/* dojox/gfx/Mover */ mover, /* Object */ shift){
+		onMove: function(/* dojox/gfx/Mover */ mover, /* Object */ shift, /* Event */ evt){
 			// summary:
 			//		called during every move notification,
 			//		should actually move the node, can be overwritten.
@@ -123,7 +123,10 @@ define(["dojo/_base/lang","dojo/_base/declare","dojo/_base/array","dojo/_base/ev
 			//		A Mover instance that fired the event.
 			// shift:
 			//		An object as {dx,dy} that represents the shift.
-			this.onMoving(mover, shift);
+      // 3.14 NOTE (Fixes snapping in IE): 
+      // -- Updated onMove to accept evt from Mover.js
+      // -- Passes evt along to onMoving
+			this.onMoving(mover, shift, evt);
 			this.shape.applyLeftTransform(shift);
 			this.onMoved(mover, shift);
 		},
