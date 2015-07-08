@@ -987,7 +987,7 @@ function(kernel, lang, Color, has, win, arr, dom, domConstruct, domGeom){
 			if(ns){
 				// If more options are added, update the docblock at the end of shape.js!
 				arr.forEach(["Group", "Rect", "Ellipse", "Circle", "Line",
-						"Polyline", "Image", "Text", "Path", "TextPath",
+            "Polyline", "Image", "Text", "Path", "TextPath", "EsriPath",
 						"Surface", "createSurface", "fixTarget"], function(name){
 					g[name] = ns[name];
 				});
