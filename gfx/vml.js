@@ -1,7 +1,7 @@
 define(["dojo/_base/lang", "dojo/_base/declare", "dojo/_base/array", "dojo/_base/Color", "dojo/_base/sniff",
-		"dojo/_base/config", "dojo/dom", "dojo/dom-geometry", "dojo/_base/kernel",
+		"dojo/_base/config", "dojo/dom", "dojo/dom-geometry", "dojo/dom-style", "dojo/_base/kernel",
 		"./_base", "./shape", "./path", "./arc", "./gradient", "./matrix"],
-function(lang, declare, arr, Color, has, config, dom, domGeom, kernel, g, gs, pathLib, arcLib, gradient, m){
+function(lang, declare, arr, Color, has, config, dom, domGeom, domStyle, kernel, g, gs, pathLib, arcLib, gradient, m){
 	var vml = g.vml = {
 		// summary:
 		//		This the default graphics rendering bridge for IE6-7.
@@ -18,7 +18,7 @@ function(lang, declare, arr, Color, has, config, dom, domGeom, kernel, g, gs, pa
 		//		mapping from SVG alignment to VML alignment
 	};
 
-	vml.xmlns = "urn:schemas-microsoft-com:vml";
+	/*vml.xmlns = "urn:schemas-microsoft-com:vml";
 
 	document.namespaces.add("v", vml.xmlns);
 	var vmlElems = ["*", "group", "roundrect", "oval", "shape", "rect", "imagedata", "path", "textpath", "text"],
@@ -29,7 +29,34 @@ function(lang, declare, arr, Color, has, config, dom, domGeom, kernel, g, gs, pa
 	}
 	for (; i < l; ++i) {
 		s.addRule("v\\:" + vmlElems[i], "behavior:url(#default#VML); display:inline-block");
-	}
+	}*/
+  
+  // Try to create some VML styles
+  var createVmlStyles = function() {
+    // dojox.gfx.vml.xmlns: String: a VML's namespace
+    vml.xmlns = "urn:schemas-microsoft-com:vml";
+    
+    try {
+      document.namespaces.add("v", vml.xmlns);
+      var vmlElems = ["*", "group", "roundrect", "oval", "shape", "rect", "imagedata", "path", "textpath", "text"],
+        i = 0, l = 1, s = document.createStyleSheet();
+      if(has("ie") >= 8){
+        i = 1;
+        l = vmlElems.length;
+      }
+      for (; i < l; ++i) {
+        s.addRule("v\\:" + vmlElems[i], "behavior:url(#default#VML); display:inline-block");
+      }
+      //console.log("DONE");
+    } catch (e) {
+      //console.log("retrying...");
+      setTimeout(createVmlStyles, 10);
+    }
+    
+  };
+  createVmlStyles();
+  
+  // This isn't the prettiest thing, but it ensures creation
 
 	vml.text_alignment = {start: "left", middle: "center", end: "right"};
 
@@ -361,6 +388,51 @@ function(lang, declare, arr, Color, has, config, dom, domGeom, kernel, g, gs, pa
 			return this;
  		}
 	});
+  
+  /*********************************
+   * Esri Patch
+   * Adds support for shape opacity
+   *********************************/
+  
+  (function() {
+    // Overrides to support layer opacity in IE
+    
+    var shapeClass = vml.Shape, 
+        gfxSetStroke = shapeClass.prototype.setStroke,
+        gfxSetFill = shapeClass.prototype.setFill;
+        
+    shapeClass.prototype.setStroke = function() {
+      //console.log("Patch: setStroke");
+      var retVal = gfxSetStroke.apply(this, arguments);
+      
+      var node = this.rawNode, stroke = node && node.stroke, parent = this.getParent();
+      if (stroke && parent) {
+        var op = ((parent._esriIeOpacity  !== undefined) && (parent._esriIeOpacity  !== null)) ? parent._esriIeOpacity : 1;
+        stroke.opacity *= op;
+      }
+      
+      return retVal;
+    };
+
+    shapeClass.prototype.setFill = function() {
+      //console.log("Patch: setFill");
+      var retVal = gfxSetFill.apply(this, arguments);
+      
+      var node = this.rawNode, fill = node && node.fill, parent = this.getParent();
+      if (fill && parent) {
+        var op = ((parent._esriIeOpacity !== undefined) && (parent._esriIeOpacity !== null)) ? parent._esriIeOpacity : 1;
+        
+        if (fill.type === "tile") {
+          domStyle.set(node, "opacity", op);
+        }
+        else {
+          fill.opacity *= op;
+        }
+      }
+      
+      return retVal;
+    };
+  }());
 
 	  vml.Group = declare("dojox.gfx.vml.Group", vml.Shape, {
 		// summary:
@@ -1039,6 +1111,22 @@ function(lang, declare, arr, Color, has, config, dom, domGeom, kernel, g, gs, pa
 		} 		
 	});
 	vml.Path.nodeType = "shape";
+
+  /********************************
+   * Esri Patch
+   * Optimizes path drawing at the 
+   * expense of losing bbox calc
+   ********************************/
+  
+  vml.EsriPath = declare("dojox.gfx.vml.EsriPath", vml.Path, {
+    setShape: function(newShape) {
+      //console.log("Patch: EsriPath");
+      this.rawNode.path.v = (this.vmlPath = newShape);
+      return this;
+    }
+  });
+
+  vml.EsriPath.nodeType = "shape";
 
 	vml.TextPath = declare("dojox.gfx.vml.TextPath", [vml.Path, pathLib.TextPath], {
 		// summary:
