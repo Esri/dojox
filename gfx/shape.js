@@ -1,6 +1,29 @@
 define(["./_base", "dojo/_base/lang", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/sniff",
 	"dojo/on", "dojo/_base/array", "dojo/dom-construct", "dojo/_base/Color", "./matrix" ],
 	function(g, lang, declare, kernel, has, on, arr, domConstruct, Color, matrixLib){
+	
+	var isChrome = !!has("chrome");
+    
+	function removeElementAt(arr, index) {
+		if (!isChrome) {
+			return arr.splice(index, 1);
+		}
+		
+		// Ref:
+		// https://gamealchemist.wordpress.com/2013/05/01/lets-get-those-javascript-arrays-to-work-fast/
+		var len = arr.length;
+		
+		if (!len) { 
+			return; 
+		}
+		
+		while (index < len) {
+			arr[index] = arr[index + 1];
+			index++
+		}
+		
+		arr.length--;
+	}
 
 	var shape = g.shape = {
 		// summary:
@@ -555,7 +578,7 @@ define(["./_base", "dojo/_base/lang", "dojo/_base/declare", "dojo/_base/kernel",
 						shape.parent = null;
 						shape.parentMatrix = null;
 					}
-					this.children.splice(i, 1);
+					removeElementAt(this.children, i);
 					break;
 				}
 			}
@@ -625,7 +648,7 @@ define(["./_base", "dojo/_base/lang", "dojo/_base/declare", "dojo/_base/kernel",
 			//		one of the child shapes to move to the front
 			for(var i = 0; i < this.children.length; ++i){
 				if(this.children[i] == shape){
-					this.children.splice(i, 1);
+					removeElementAt(this.children, i);
 					this.children.push(shape);
 					break;
 				}
@@ -639,7 +662,7 @@ define(["./_base", "dojo/_base/lang", "dojo/_base/declare", "dojo/_base/kernel",
 			//		one of the child shapes to move to the front
 			for(var i = 0; i < this.children.length; ++i){
 				if(this.children[i] == shape){
-					this.children.splice(i, 1);
+					removeElementAt(this.children, i);
 					this.children.unshift(shape);
 					break;
 				}
