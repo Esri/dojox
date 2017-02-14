@@ -28,6 +28,7 @@ define({ root:
 "it": true,
 "id": true,
 "hu": true,
+"hi": true,
 "hr": true,
 "he": true,
 "fr": true,

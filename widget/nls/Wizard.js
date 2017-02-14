@@ -32,6 +32,7 @@ done: "Done"
 "id": true,
 "hu": true,
 "hr": true,
+"hi": true,
 "he": true,
 "fr": true,
 "fi": true,

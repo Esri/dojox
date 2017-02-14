@@ -24,6 +24,7 @@ define({ root:
 "fi": true,
 "fr": true,
 "he": true,
+"hi": true,
 "hu": true,
 "hr": true,
 "it": true,
