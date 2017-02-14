@@ -31,6 +31,7 @@ define({ root:
 "id": true,
 "hu": true,
 "hr": true,
+"hi": true,
 "he": true,
 "fr": true,
 "fi": true,
