@@ -4,8 +4,26 @@ define([
 	"dojo/_base/array",
 	"dojo",
 	"dojo/request",
+	"dojo/request/xhr",
 	"dojo/has"
-],function(declare, lang, arrayUtil, dojo, request, has){
+],function(declare, lang, arrayUtil, dojo, request, xhr, has){
+	function noop(){}
+
+	if(has("native-xhr2")){
+		// Ensure a progress handler is set before XMLHttpRequest#open()
+		// is called so the progress handler attached in
+		// Uploader#uploadWithFormData() will fire
+		xhr._create = (function(create){
+			return function(){
+				var _xhr = create();
+
+				_xhr.upload.addEventListener('progress', noop, false);
+
+				return _xhr;
+			};
+		})(xhr._create);
+	}
+
 	return declare("dojox.form.uploader._HTML5", [], {
 		// summary:
 		//		A mixin for dojox/form/Uploader that adds HTML5 multiple-file upload capabilities and
@@ -102,7 +120,6 @@ define([
 					method: "POST",
 					data: fd,
 					handleAs: "json",
-					uploadProgress: true,
 					headers: {
 						Accept: "application/json"
 					}
@@ -130,6 +147,7 @@ define([
 				// Disconnect event handlers when done
 				deferred.response.xhr.removeEventListener("load", onProgressHandler, false);
 				deferred.response.xhr.upload.removeEventListener("progress", onProgressHandler, false);
+				deferred.response.xhr.upload.removeEventListener("progress", noop, false);
 
 				deferred = null;
 			}
